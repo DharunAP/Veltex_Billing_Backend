@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Tax Invoice</title>
+    <style>
+        body {
+            letter-spacing: 2px;
+            font-size: 15px;
+            margin: 20px;
+        }
+        .invoice-box {
+            width: 800px;
+            padding: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .header, .info, .items, .summary, .bank-details {
+            border: 1px solid black;
+        }
+        .items, .buyer {
+            font-size: 18px;
+        }
+        td, th, .btm-border {
+            border: 1px solid black;
+            padding: 5px;
+            vertical-align: top;
+        }
+        td{
+            border-bottom: none;
+            border-top: none;
+        }
+        .no-border {
+            border: none;
+        }
+        .no-pad{
+            padding: 0;
+        }
+        .center {
+            text-align: center;
+        }
+        .bold {
+            font-weight: bold;
+        }
+        .right {
+            text-align: right;
+        }
+        .left {
+            text-align: left;
+        }
+        .logo-cell img {
+            width: 80px;
+            height: 80px;
+        }
+        .signature {
+            text-align: right;
+            font-weight: bold;
+            padding-top: 90px;
+        }
+        .highlight {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .no-ps {
+            border-left: none;
+        }
+        .veltex{
+            font-size: 25px;
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-box">
+        <table class="header">
+            <tr>
+                <th colspan="3" class="center bold">TAX INVOICE</th>
+            </tr>
+            <tr class="btm-border">
+                <td colspan="2">
+                    <table class="no-border" style="width: 65%;">
+                        <tr>
+                            <td class="no-border no-pad bold ">GSTIN </td>
+                            <td class="no-border no-pad">: 33BDZPP7890J1ZG</td>
+                        </tr>
+                        <tr>
+                            <td class="no-border no-pad bold" >STATE CODE </td>     
+                            <td class="no-border no-pad">: 33 (TN)</td>
+                        </tr>
+                    </table>
+                </td>
+                <td class="left">
+                    <table class="no-border" style="width: 50%;">
+                        <tr>
+                            <td class="no-border no-pad bold ">BILL NO</td>
+                            <td class="no-border no-pad">: {{bill.bill_number}}</td>
+                        </tr>
+                        <tr>
+                            <td class="no-border no-pad bold" >DATE</td>     
+                            <td class="no-border no-pad">: {{bill.date|date:'d-m-y'}}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td class="logo-cell" style="width: 10%;">
+                    <img src="https://drive.google.com/thumbnail?id=1PpTWhktaTFKOY_iNZ-DwYF4Yj4tfBuQP" alt="logo">
+                </td>
+                <td style="width: 45%;">
+                    <span class="veltex"><b>VEL TEX</b></span><br>
+                    Mfrs . Handloom sarees,<br>
+                    12/47, Ayegoundanpalayam,<br>
+                    Thudupathi, Perundurai-638057.Erode Dt.<br>
+                    Cell : +91 9842605019
+                </td>
+                <td style="width: 45%;" class="buyer">
+                    <b>{{bill.buyer.name}}</b><br>
+                    {{bill.buyer.address}}<br>
+                    GSTIN : {{bill.buyer.gstin}}<br>
+                    STATE CODE : {{bill.buyer.state_code}}
+                </td>
+            </tr>
+        </table>
+
+        <table class="items">
+            <tr class="center bold">
+                <th >Rate</th>
+                <th >Particulars</th>
+                <th >Sarees</th>
+                <th >Amount</th>
+            </tr>
+            {%for item in items%}
+                {%if item == '0'%}
+                <tr>
+                    <td class="item" style="padding: 3px;"></td>
+                    <td class="item" style="padding: 3px;"></td>
+                    <td class="item" style="padding: 3px;"></td>
+                    <td class="item" style="padding: 3px;"></td>
+                </tr>
+                {%else%}
+                <tr>
+                    <td class="center item">{{item.rate}}</td>
+                    <td class="item">{{item.product.name}}</td>
+                    <td class="center item">{{item.quantity}}</td>
+                    <td class="center item">{{item.amount}}</td>
+                </tr>
+                {%endif%}
+            {%endfor%}
+            <tr style="padding-top: 20px;">
+                <td></td>
+                <td class="center item"><b>HSN CODE :</b> 5407</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="btm-border"></td>
+                <td class="bold right btm-border">TOTAL SAREES</td>
+                <th class="center bold btm-border">{{bill.total_sarees}}</th>
+                <th class="center bold btm-border">{{bill.subtotal}}</th>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    <table class="no-border" >
+                        <tr>
+                            <td class="no-border no-pad bold" style="width: 25%;">BANK DETAILS</td>
+                            <td class="no-border no-pad">: TAMILNAD MERCANTILE BANK,<br>
+                                : R.S. PURAM, COIMBATORE.</td>
+                        </tr>
+                        <tr>
+                            <td class="no-border no-pad bold" >A/C NO</td>     
+                            <td class="no-border no-pad">: 136700050900596</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid black; padding-bottom: 5px;">
+                            <td class="no-border no-pad bold" >IFSC CODE</td>     
+                            <td class="no-border no-pad">: TMBL0000136</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="no-border">
+                                <b>RUPEES :</b> {{bill.amount_in_words}}
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td colspan="1">
+                    <table class="no-border center" >
+                        <tr>
+                            <td colspan="2" class="no-border no-pad bold left">GST Calculations</td>
+                        </tr>
+                        <tr>
+                            <td class="no-border no-pad">COST</td>
+                            <td class="no-border no-pad right">{{bill.subtotal}}</td>
+                        </tr>
+                        <tr>
+                            <td class="no-border no-pad">SGST 2.5%</td>
+                            <td class="no-border no-pad right">{{bill.gst_sgst}}</td>
+                        </tr>
+                        <tr>
+                            <td class="no-border no-pad">CGST 2.5%</td>
+                            <td class="no-border no-pad right">{{bill.gst_cgst}}</td>
+                        </tr>
+                        <tr style="border-top: 1px solid black;padding-top:50px;">
+                            <td class="no-border bold no-pad" style="padding-top: 5px;">TOTAL AMOUNT</td>
+                            <td class="no-border bold no-pad right" style="padding-top: 5px;">{{bill.total_amount}}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+        <div class="signature">FOR <i>VEL TEX</i>:</div>
+    </div>
+</body>
+</html>
