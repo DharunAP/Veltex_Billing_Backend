@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from django.utils import timezone
-from .utils import generate_pdf
+from .utils import generate_pdf, generate_and_merge_pdfs, clear_media_subfolder
 from django.shortcuts import render,redirect
 
 def rendertemp(request):
@@ -29,7 +29,7 @@ class ProductListCreateView(generics.ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
-# BILL CREATE
+# BILL CREATE tested
 class BillCreateView(APIView):
     def post(self, request):
         serializer = BillDetailSerializer(data=request.data)
@@ -40,7 +40,7 @@ class BillCreateView(APIView):
             return Response(BillDetailSerializer(bill).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# BILL RETRIEVE + UPDATE
+# BILL RETRIEVE + UPDATE tested
 class BillRetrieveUpdateView(generics.RetrieveUpdateAPIView):
     queryset = Bill.objects.all()
     serializer_class = BillDetailSerializer
@@ -54,12 +54,6 @@ class BillListView(generics.ListAPIView):
     queryset = Bill.objects.all().order_by('-bill_number')
     serializer_class = BillSerializer
 
-# RESET BILLS (Archive + Delete All Bills)
-class ResetBillsView(APIView):
-    def post(self, request):
-        bills = Bill.objects.all().order_by('bill_number')
-        bills.delete()
-        return Response({"message": "Bills archived and deleted. Ready to restart billing."}, status=200)
 
 # EXPORT BILL RANGE
 class ExportBillsView(APIView):
@@ -69,10 +63,17 @@ class ExportBillsView(APIView):
         bills = Bill.objects.filter(bill_number__gte=start, bill_number__lte=end).order_by('bill_number')
         if not bills.exists():
             return Response({"error": "No bills in given range."}, status=404)
+        generate_and_merge_pdfs(bills,"Merge_")
         return Response({"message": f"Bills {start}-{end} exported."}, status=200)
 
 # ARCHIVED FILES (for listing stored files)
 class ArchiveListView(APIView):
     def get(self, request):
         # This can later be hooked into Google Drive listing
+        bills = Bill.objects.all().order_by('bill_number')
+        if not bills.exists():
+            return Response({"error":"There are no bills left"},status=500)
+        generate_and_merge_pdfs(bills,"Archieve_")
+        clear_media_subfolder('Bills')
+        bills.delete()
         return Response({"archives": ["archive_2025-04-07.pdf"]})

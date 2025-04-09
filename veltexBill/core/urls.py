@@ -10,7 +10,6 @@ urlpatterns = [
     path('bills/<int:pk>/', views.BillRetrieveUpdateView.as_view(), name='view-update-bill'),
     path('bills/', views.BillListView.as_view(), name='bill-list'),
 
-    path('reset/', views.ResetBillsView.as_view(), name='reset-bills'),
     path('export/', views.ExportBillsView.as_view(), name='export-bills'),
     path('archives/', views.ArchiveListView.as_view(), name='list-archives'),
 ]
