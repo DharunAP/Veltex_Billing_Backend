@@ -4,4 +4,3 @@ from .models import *
 admin.site.register(Buyer)
 admin.site.register(Bill)
 admin.site.register(BillItem)
-admin.site.register(Product)

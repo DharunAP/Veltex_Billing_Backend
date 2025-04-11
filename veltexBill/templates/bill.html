@@ -125,10 +125,11 @@
 
         <table class="items">
             <tr class="center bold">
-                <th >Rate</th>
-                <th >Particulars</th>
-                <th >Sarees</th>
-                <th >Amount</th>
+                <th style="width: 10%;">Rate</th>
+                <th style="width: 15%;">HSN Code</th>
+                <th style="width: 35%;">Particulars</th>
+                <th style="width: 20%;">Quantity</th>
+                <th style="width: 30%;">Amount</th>
             </tr>
             {%for item in items%}
                 {%if item == '0'%}
@@ -137,25 +138,22 @@
                     <td class="item" style="padding: 3px;"></td>
                     <td class="item" style="padding: 3px;"></td>
                     <td class="item" style="padding: 3px;"></td>
+                    <td class="item" style="padding: 3px;"></td>
                 </tr>
                 {%else%}
                 <tr>
                     <td class="center item">{{item.rate}}</td>
-                    <td class="item">{{item.product.name}}</td>
+                    <td class="center item">{{item.hsn_code}}</td>
+                    <td class="item">{{item.particulars}}</td>
                     <td class="center item">{{item.quantity}}</td>
                     <td class="center item">{{item.amount}}</td>
                 </tr>
                 {%endif%}
             {%endfor%}
-            <tr style="padding-top: 20px;">
-                <td></td>
-                <td class="center item"><b>HSN CODE :</b> 5407</td>
-                <td></td>
-                <td></td>
-            </tr>
             <tr>
                 <td class="btm-border"></td>
-                <td class="bold right btm-border">TOTAL SAREES</td>
+                <td class="btm-border"></td>
+                <td class="bold right btm-border">TOTAL QUANTITY</td>
                 <th class="center bold btm-border">{{bill.total_sarees}}</th>
                 <th class="center bold btm-border">{{bill.subtotal}}</th>
             </tr>
@@ -182,7 +180,7 @@
                         </tr>
                     </table>
                 </td>
-                <td colspan="1">
+                <td colspan="2">
                     <table class="no-border center" >
                         <tr>
                             <td colspan="2" class="no-border no-pad bold left">GST Calculations</td>
@@ -191,6 +189,8 @@
                             <td class="no-border no-pad">COST</td>
                             <td class="no-border no-pad right">{{bill.subtotal}}</td>
                         </tr>
+
+                        {% if bill.buyer.state_code == '33' %}
                         <tr>
                             <td class="no-border no-pad">SGST 2.5%</td>
                             <td class="no-border no-pad right">{{bill.gst_sgst}}</td>
@@ -199,15 +199,22 @@
                             <td class="no-border no-pad">CGST 2.5%</td>
                             <td class="no-border no-pad right">{{bill.gst_cgst}}</td>
                         </tr>
+                        {% else %}
+                        <tr>
+                            <td class="no-border no-pad">IGST 5%</td>
+                            <td class="no-border no-pad right">{{bill.gst_igst}}</td>
+                        </tr>
+                        {% endif %}
                         <tr style="border-top: 1px solid black;padding-top:50px;">
-                            <td class="no-border bold no-pad" style="padding-top: 5px;">TOTAL AMOUNT</td>
-                            <td class="no-border bold no-pad right" style="padding-top: 5px;">{{bill.total_amount}}</td>
+                            <td class="no-border bold no-pad" style="padding-top: 5px;">TOTAL <br> AMOUNT</td>
+                            <td class="no-border bold no-pad right" style="padding-top: 5px;">{{bill.total_amount}}.00</td>
                         </tr>
                     </table>
                 </td>
             </tr>
         </table>
         <div class="signature">FOR <i>VEL TEX</i>:</div>
+        <div class="signature">Proprieter </div>
     </div>
 </body>
 </html>

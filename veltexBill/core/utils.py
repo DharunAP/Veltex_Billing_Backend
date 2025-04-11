@@ -20,7 +20,6 @@ def generate_pdf(bill):
         itemsList.append(item)
     for i in range(len(items),(20-len(items))*5):
         itemsList.append('0')
-    print(itemsList)
     template_path = 'bill.html'
     context = {
         'bill': bill,
@@ -40,18 +39,18 @@ def generate_and_merge_pdfs(bills, filename):
     merger = PdfMerger()
 
     today = datetime.now().strftime("%Y-%m-%d")
-    merged_filename = f"{filename}{today}.pdf"
-
-    if filename == 'Merge_':
-        output_dir = os.path.join(settings.MEDIA_ROOT, "Bills")
-    else:
-        output_dir = os.path.join(settings.MEDIA_ROOT, "Archives")
+    merged_filename = f"{filename}"
+    output_dir = os.path.join(settings.MEDIA_ROOT, "Archives")
 
     os.makedirs(output_dir, exist_ok=True)  # Make sure the directory exists
     merged_path = os.path.join(output_dir, merged_filename)
+    def get_value(obj, key):
+        if isinstance(obj, dict):
+            return obj.get(key)
+        return getattr(obj, key, None)
 
     for bill in bills:
-        bill_pdf_filename = f"bill_{bill.bill_number}.pdf"
+        bill_pdf_filename = f"bill_{get_value(bill, 'bill_number')}.pdf"
         bill_pdf_path = os.path.join(settings.MEDIA_ROOT, "Bills", bill_pdf_filename)
 
         # ✅ Check if PDF already exists
@@ -62,12 +61,11 @@ def generate_and_merge_pdfs(bills, filename):
         try:
             merger.append(bill_pdf_path)
         except Exception as e:
-            print(f"Error merging Bill {bill.bill_number}: {e}")
+            print(f"Error merging Bill {get_value(bill, 'bill_number')}: {e}")
 
     merger.write(merged_path)
     merger.close()
 
-    print(f"✅ Merged PDF saved at: {merged_path}")
     return merged_path
 
 
@@ -87,5 +85,3 @@ def clear_media_subfolder(subfolder_name):
                 deleted += 1
         except Exception as e:
             print(f"Failed to delete {file_path}: {e}")
-    
-    print(f"✅ Deleted {deleted} files from {folder_path}")

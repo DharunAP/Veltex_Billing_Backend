@@ -1,22 +1,22 @@
 from rest_framework import generics
-from .models import Buyer, Product, Bill, BillItem
-from .serializers import BuyerSerializer, ProductSerializer, BillSerializer, BillDetailSerializer
+from .models import Buyer, Bill, BillItem
+from .serializers import BuyerSerializer, BillSerializer, BillDetailSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from django.utils import timezone
 from .utils import generate_pdf, generate_and_merge_pdfs, clear_media_subfolder
 from django.shortcuts import render,redirect
+from datetime import datetime
 
 def rendertemp(request):
-    bill = Bill.objects.get(bill_number=20)
+    bill = Bill.objects.get(bill_number=1)
     items = list(BillItem.objects.filter(bill_id=bill.id))
     itemsList = []
     for item in items:
         itemsList.append(item)
     for i in range(len(items),(20-len(items))*5):
         itemsList.append('0')
-    print(itemsList)
     return render(request,'bill.html',{'bill':bill,'items':itemsList})
 
 # BUYER VIEWS
@@ -24,10 +24,10 @@ class BuyerListCreateView(generics.ListCreateAPIView):
     queryset = Buyer.objects.all()
     serializer_class = BuyerSerializer
 
-# PRODUCT VIEWS
-class ProductListCreateView(generics.ListCreateAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
+class BuyerRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Buyer.objects.all()
+    serializer_class = BuyerSerializer
+    lookup_field = 'id'  # default, but you can set explicitly
 
 # BILL CREATE tested
 class BillCreateView(APIView):
@@ -41,13 +41,14 @@ class BillCreateView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # BILL RETRIEVE + UPDATE tested
-class BillRetrieveUpdateView(generics.RetrieveUpdateAPIView):
+class BillRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Bill.objects.all()
     serializer_class = BillDetailSerializer
 
     def perform_update(self, serializer):
         bill = serializer.save()
-        pdf_file = generate_pdf(bill)
+        generate_pdf(bill)  # Regenerate the PDF on update
+
 
 # LIST ALL BILLS
 class BillListView(generics.ListAPIView):
@@ -58,13 +59,11 @@ class BillListView(generics.ListAPIView):
 # EXPORT BILL RANGE
 class ExportBillsView(APIView):
     def post(self, request):
-        start = int(request.query_params.get("start", 1))
-        end = int(request.query_params.get("end", 999999))
-        bills = Bill.objects.filter(bill_number__gte=start, bill_number__lte=end).order_by('bill_number')
-        if not bills.exists():
-            return Response({"error": "No bills in given range."}, status=404)
-        generate_and_merge_pdfs(bills,"Merge_")
-        return Response({"message": f"Bills {start}-{end} exported."}, status=200)
+        file_name = request.query_params.get("file_name")
+        print(request.data['bills'])
+        bills = sorted(request.data.get('bills'), key=lambda x: x['bill_number'])
+        path = generate_and_merge_pdfs(bills,file_name)
+        return Response({"message": f"Bills {file_name} exported.",'path':path}, status=200)
 
 # ARCHIVED FILES (for listing stored files)
 class ArchiveListView(APIView):
@@ -73,7 +72,8 @@ class ArchiveListView(APIView):
         bills = Bill.objects.all().order_by('bill_number')
         if not bills.exists():
             return Response({"error":"There are no bills left"},status=500)
-        generate_and_merge_pdfs(bills,"Archieve_")
+        date = datetime.today().strftime('%d-%m-%Y')
+        generate_and_merge_pdfs(bills,f"Archieve_{date}.pdf")
         clear_media_subfolder('Bills')
         bills.delete()
-        return Response({"archives": ["archive_2025-04-07.pdf"]})
+        return Response({"message":'Reset Done'})

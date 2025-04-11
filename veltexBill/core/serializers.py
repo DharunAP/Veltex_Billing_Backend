@@ -1,36 +1,22 @@
 import decimal
 from rest_framework import serializers
-from .models import Buyer, Product, Bill, BillItem
+from .models import Buyer, Bill, BillItem
 from num2words import num2words
+from .utils import clear_media_subfolder, generate_pdf
 # BUYER
 class BuyerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Buyer
         fields = '__all__'
-
-# PRODUCT
-class ProductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Product
-        fields = '__all__'
+        extra_kwargs = {
+            'gstin': {'validators': []},
+        }
 
 # BILL ITEM (used inside a bill)
 class BillItemSerializer(serializers.ModelSerializer):
-    # input
-    product_input = serializers.DictField(write_only=True)
-
-    # output
-    product = serializers.SerializerMethodField(read_only=True)
-
     class Meta:
         model = BillItem
-        fields = ['product_input', 'product', 'quantity', 'rate']
-
-    def get_product(self, obj):
-        return {
-            "name": obj.product.name,
-            "latest_rate": obj.product.latest_rate
-        }
+        fields = ['particulars', 'hsn_code', 'quantity', 'rate']
 
 
 
@@ -41,7 +27,7 @@ class BillSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Bill
-        fields = ['bill_number','date','hsn_code','items','buyer']
+        fields = ['id','bill_number','date','total_amount','items','buyer']
 
 # BILL CREATION / UPDATE
 class BillDetailSerializer(serializers.ModelSerializer):
@@ -50,18 +36,27 @@ class BillDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Bill
-        fields = ['id', 'bill_number', 'date', 'buyer', 'items', 'hsn_code']
+        fields = ['id', 'bill_number', 'date', 'buyer', 'items']
         read_only_fields = ['bill_number', 'date']
 
     def create(self, validated_data):
-        print(validated_data)
         buyer_data = validated_data.pop('buyer')
         items_data = validated_data.pop('items')
         # Auto-generate bill number
         last_bill = Bill.objects.order_by('-bill_number').first()
         next_bill_number = 1 if not last_bill else last_bill.bill_number + 1
 
-        buyer, _ = Buyer.objects.get_or_create(name=buyer_data['name'], defaults=buyer_data)
+        try:
+            buyer = Buyer.objects.get(gstin=buyer_data['gstin'])
+            # Update if needed
+            buyer.name = buyer_data['name']
+            buyer.address = buyer_data['address']
+            buyer.phone = buyer_data['phone']
+            buyer.state_code = buyer_data['state_code']
+            buyer.save()
+        except Buyer.DoesNotExist:
+            buyer = Buyer.objects.create(**buyer_data)
+
         
         bill = Bill.objects.create(
             bill_number=next_bill_number,
@@ -70,33 +65,24 @@ class BillDetailSerializer(serializers.ModelSerializer):
         )
         amount,quant = 0,0
         for item in items_data:
-            product_data = item.get('product_input')
-            print(item,product_data)
-            product, _ = Product.objects.get_or_create(name=product_data['name'])
-
-            # Update rate if changed
-            if product.latest_rate != item['rate']:
-                product.latest_rate = item['rate']
-                product.save()
-
             billItem = BillItem.objects.create(
                 bill=bill,
-                product=product,
+                particulars = item['particulars'],
+                hsn_code = item['hsn_code'],
                 quantity=item['quantity'],
                 rate=item['rate'],
                 amount=item['quantity']*item['rate'],
             )
-            print(billItem.amount)
             amount += billItem.amount
             quant += billItem.quantity
         bill.subtotal = amount
         bill.total_sarees = quant
         if(bill.buyer.state_code=="33"):
             bill.gst_sgst = bill.gst_cgst = round(bill.subtotal*decimal.Decimal(0.025),2)
-            bill.total_amount = bill.subtotal + bill.gst_sgst + bill.gst_cgst 
+            bill.total_amount = round(bill.subtotal + bill.gst_sgst + bill.gst_cgst )
         else:
             bill.gst_igst = round(bill.subtotal*decimal.Decimal(0.05),2)
-            bill.total_amount = bill.subtotal + bill.gst_igst
+            bill.total_amount = round(bill.subtotal + bill.gst_igst)
         words = num2words(int(bill.total_amount), lang='en_IN').title()
         bill.amount_in_words = f'{words} Rupees only.'
         bill.save()
@@ -126,16 +112,11 @@ class BillDetailSerializer(serializers.ModelSerializer):
             quant = 0
 
             for item in items_data:
-                product_data = item.get('product_input')
-                product, _ = Product.objects.get_or_create(name=product_data['name'])
-
-                if product.latest_rate != item['rate']:
-                    product.latest_rate = item['rate']
-                    product.save()
 
                 bill_item = BillItem.objects.create(
                     bill=instance,
-                    product=product,
+                    particulars = item['particulars'],
+                    hsn_code = item['hsn_code'],
                     quantity=item['quantity'],
                     rate=item['rate'],
                     amount=item['quantity'] * item['rate'],
@@ -149,10 +130,10 @@ class BillDetailSerializer(serializers.ModelSerializer):
 
             if instance.buyer.state_code == "33":
                 instance.gst_sgst = instance.gst_cgst = round(instance.subtotal * decimal.Decimal(0.025), 2)
-                instance.total_amount = instance.subtotal + instance.gst_sgst + instance.gst_cgst
+                instance.total_amount = round(instance.subtotal + instance.gst_sgst + instance.gst_cgst)
             else:
                 instance.gst_igst = round(instance.subtotal * decimal.Decimal(0.05), 2)
-                instance.total_amount = instance.subtotal + instance.gst_igst
+                instance.total_amount = round(instance.subtotal + instance.gst_igst)
 
             # Amount in words
             words = num2words(int(instance.total_amount), lang='en_IN').title()
@@ -161,3 +142,4 @@ class BillDetailSerializer(serializers.ModelSerializer):
             instance.save()
 
         return instance
+    
