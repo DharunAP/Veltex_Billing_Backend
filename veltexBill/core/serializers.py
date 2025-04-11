@@ -70,8 +70,8 @@ class BillDetailSerializer(serializers.ModelSerializer):
                 particulars = item['particulars'],
                 hsn_code = item['hsn_code'],
                 quantity=item['quantity'],
-                rate=item['rate'],
-                amount=item['quantity']*item['rate'],
+                rate=round(item['rate']),
+                amount=round(item['quantity']*item['rate'],)
             )
             amount += billItem.amount
             quant += billItem.quantity
@@ -118,8 +118,8 @@ class BillDetailSerializer(serializers.ModelSerializer):
                     particulars = item['particulars'],
                     hsn_code = item['hsn_code'],
                     quantity=item['quantity'],
-                    rate=item['rate'],
-                    amount=item['quantity'] * item['rate'],
+                    rate=round(item['rate']),
+                    amount=round(item['quantity'] * item['rate'],)
                 )
                 amount += bill_item.amount
                 quant += bill_item.quantity
