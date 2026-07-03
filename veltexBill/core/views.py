@@ -15,7 +15,7 @@ def rendertemp(request):
     itemsList = []
     for item in items:
         itemsList.append(item)
-    for i in range(len(items),(20-len(items))*5):
+    for i in range(len(items),(10-len(items))*5):
         itemsList.append('0')
     return render(request,'bill.html',{'bill':bill,'items':itemsList})
 
@@ -34,7 +34,7 @@ class BillCreateView(APIView):
     def post(self, request):
         serializer = BillDetailSerializer(data=request.data)
         if serializer.is_valid():
-            bill = serializer.save(date=timezone.now())
+            bill = serializer.save()
             pdf_file = generate_pdf(bill)
             # upload_to_drive(pdf_file, f"Bill_{bill.bill_number}.pdf")
             return Response(BillDetailSerializer(bill).data, status=status.HTTP_201_CREATED)

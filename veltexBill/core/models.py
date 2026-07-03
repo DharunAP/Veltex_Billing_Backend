@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 class Buyer(models.Model):
     name = models.CharField(max_length=100)
@@ -12,7 +13,7 @@ class Buyer(models.Model):
 
 class Bill(models.Model):
     bill_number = models.PositiveIntegerField(unique=True)
-    date = models.DateField(auto_now_add=True)
+    date = models.DateField(default=timezone.localdate)
     buyer = models.ForeignKey(Buyer, on_delete=models.CASCADE)
     total_sarees = models.IntegerField(default=0)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)

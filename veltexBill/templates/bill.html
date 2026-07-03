@@ -6,8 +6,8 @@
     <style>
         body {
             letter-spacing: 2px;
-            font-size: 15px;
             margin: 20px;
+            font-size: 19px;
         }
         .invoice-box {
             width: 800px;
@@ -20,7 +20,7 @@
         .header, .info, .items, .summary, .bank-details {
             border: 1px solid black;
         }
-        .items, .buyer {
+        .items, .buyer, .header {
             font-size: 18px;
         }
         td, th, .btm-border {
@@ -37,6 +37,7 @@
         }
         .no-pad{
             padding: 0;
+            margin:0;
         }
         .center {
             text-align: center;
@@ -50,18 +51,20 @@
         .left {
             text-align: left;
         }
+        .logo-cell{
+            padding-top: 19px;
+        }
         .logo-cell img {
-            width: 80px;
-            height: 80px;
+            width: 110px;
+            height: 110px;
         }
         .signature {
             text-align: right;
             font-weight: bold;
-            padding-top: 90px;
+            padding-top: 40px;
         }
         .highlight {
-            font-weight: bold;
-            font-size: 14px;
+            font-size: 21px;
         }
         .no-ps {
             border-left: none;
@@ -94,7 +97,7 @@
                     </table>
                 </td>
                 <td class="left">
-                    <table class="no-border" style="width: 50%;">
+                    <table class="no-border" style="width: 60%;">
                         <tr>
                             <td class="no-border no-pad bold ">BILL NO</td>
                             <td class="no-border no-pad">: {{bill.bill_number}}</td>
@@ -107,21 +110,30 @@
                 </td>
             </tr>
             <tr>
-                <td class="logo-cell" style="width: 10%;">
+                <td class="logo-cell" style="width: 15%;">
                     <img src="https://drive.google.com/thumbnail?id=1PpTWhktaTFKOY_iNZ-DwYF4Yj4tfBuQP" alt="logo">
                 </td>
                 <td style="width: 45%;">
+                    <p style="font-size: 7px;"></p>
                     <span class="veltex"><b>VEL TEX</b></span><br>
                     Mfrs . Handloom sarees,<br>
                     12/47, Ayegoundanpalayam,<br>
-                    Thudupathi, Perundurai-638057.Erode Dt.<br>
-                    Cell : +91 9842605019
+                    Thudupathi, Perundurai, <br>Erode Dt-638057.<br>
+                    Cell : 9842605019
+                    <p style="font-size: 7px;"></p>
                 </td>
                 <td style="width: 45%;" class="buyer">
-                    <b>{{bill.buyer.name}}</b><br>
-                    {{bill.buyer.address}}<br>
-                    GSTIN : {{bill.buyer.gstin}}<br>
-                    STATE CODE : {{bill.buyer.state_code}}
+                    <p style="font-size: 7px;"></p>
+                    <p class="no-pad">
+                        <b>{{bill.buyer.name}}</b><br>
+                        {{bill.buyer.address}}<br>
+                        {{bill.buyer.phone}} <br>
+                    </p>
+                    <span>
+                        GSTIN : {{bill.buyer.gstin}}<br>
+                        STATE CODE : {{bill.buyer.state_code}}
+                    </span>
+                    <p style="font-size: 7px;"></p>
                 </td>
             </tr>
         </table>
@@ -162,19 +174,21 @@
             </tr>
             <tr>
                 <td colspan="3">
-                    <table class="no-border" >
+                    <table class="no-border">
                         <tr>
+                            <p style="font-size: 7px;"></p>
                             <td class="no-border no-pad bold" style="width: 25%;">BANK DETAILS</td>
                             <td class="no-border no-pad">: TAMILNAD MERCANTILE BANK,<br>
                                 : R.S. PURAM, COIMBATORE.</td>
                         </tr>
                         <tr>
                             <td class="no-border no-pad bold" >A/C NO</td>     
-                            <td class="no-border no-pad">: 136700050900596</td>
+                            <td class="no-border no-pad highlight">: 136700050900596</td>
                         </tr>
                         <tr style="border-bottom: 1px solid black; padding-bottom: 5px;">
                             <td class="no-border no-pad bold" >IFSC CODE</td>     
-                            <td class="no-border no-pad">: TMBL0000136</td>
+                            <td class="no-border no-pad highlight">: TMBL0000136
+                                <p style="font-size: 7px;"></p></td>
                         </tr>
                         <tr>
                             <td colspan="2" class="no-border">
@@ -184,9 +198,9 @@
                     </table>
                 </td>
                 <td colspan="2">
-                    <table class="no-border center" >
+                    <table class="no-border center">
                         <tr>
-                            <td colspan="2" class="no-border no-pad bold left">GST Calculations</td>
+                            <td colspan="2" class="no-border no-pad bold left" style="height: 40px;">GST Calculations</td>
                         </tr>
                         <tr>
                             <td class="no-border no-pad">COST</td>
@@ -217,7 +231,7 @@
             </tr>
         </table>
         <div class="signature">FOR <i>VEL TEX</i>:</div>
-        <div class="signature">Proprieter </div>
+        <div class="signature" style="padding-top: 50px;">Proprieter </div>
     </div>
 </body>
 </html>
