@@ -1,0 +1,3 @@
+veltexBill/media/*
+!veltexBill/media/.gitkeep
+veltexBill/db.sqlite3
